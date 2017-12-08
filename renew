@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+SCRIPTDIR="$(cd "$(dirname "$0")"; pwd -P)"
+
+certbot renew \
+  --deploy-hook ${SCRIPTDIR}/update-certs \
+  --post-hook "systemctl reload haproxy" 

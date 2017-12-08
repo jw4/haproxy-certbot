@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+USER=${HAPROXY_USER:-haproxy}
+GROUP=${HAPROXY_GROUP:-${USER}}
+CERTS=${HAPROXY_CERTS_DIR:-/etc/haproxy/certs}
+LIVE=${LETSENCRYPT_LIVE_DIR:-/etc/letsencrypt/live}
+
+tmpf="$(mktemp)"
+cat ${CERTS}/base.txt > ${tmpf}
+
+for dir in $(find ${LIVE} -maxdepth 1 -mindepth 1 -type d); do
+  domain=$(basename ${dir})
+  dest="${CERTS}/${domain}.pem"
+  echo ${dest} >> ${tmpf}
+  cat ${dir}/fullchain.pem ${dir}/privkey.pem >| ${dest}
+done
+
+cat ${tmpf} >| ${CERTS}/domains.txt
+rm ${tmpf}
+
+chown -R ${USER}:${GROUP} ${CERTS}/

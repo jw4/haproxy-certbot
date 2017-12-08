@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Look for Host headers to register.  If the certificate is already
+# registered, certbot will just skip it.
+
+CONFIG=${HAPROXY_CONFIG:-/etc/haproxy/haproxy.cfg}
+EMAIL=${LETSENCRYPT_EMAIL:-user@example.com}
+
+cat ${CONFIG} | \
+  sed -e '/hdr(host) -i/s/^.*hdr(host) -i \(.*\)$/\1/p;d' | \
+  xargs -n 1 -I'{}' \
+    certbot certonly -n \
+      -m ${EMAIL} \
+      --agree-tos \
+      --no-eff-email \
+      --cert-name '{}' \
+      --standalone -d '{}' \
+      --http-01-port 54321 \
+      --preferred-challenges http-01
